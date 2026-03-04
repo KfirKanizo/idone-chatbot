@@ -1,0 +1,73 @@
+Act as a Senior Full-Stack Developer, AI Architect, and DevOps Engineer.
+Your task is to build a complete, production-ready Multi-Tenant RAG Chatbot System. This system will be used by the "iDone" agency to provide isolated, custom-knowledge chatbots for various business clients.
+
+1. Tech Stack Requirements:
+
+Backend: Python with FastAPI (for high performance and async capabilities).
+
+Frontend (Admin Dashboard): React or Vanilla JS/HTML/CSS (keep it lightweight but modern), styled with TailwindCSS.
+
+Database (Relational/Document): PostgreSQL or MongoDB (to store tenant configurations, API keys, and system prompts).
+
+Vector Database: Qdrant or Pinecone (must support Namespaces/Metadata filtering for tenant isolation).
+
+LLM Integration: LangChain or LlamaIndex connecting to OpenAI API.
+
+DevOps: Docker and Docker Compose for the entire stack.
+
+2. Architecture & Multi-Tenancy Logic:
+
+The system MUST be strictly multi-tenant. One codebase, one deployment, handling multiple clients.
+
+Every client is a "Tenant" with a unique tenant_id.
+
+Data Isolation: All vectorized documents ingested into the Vector DB MUST be tagged with the respective tenant_id as metadata or placed in a specific namespace. The Retrieval pipeline must strictly filter by tenant_id to prevent data leakage between clients.
+
+Dynamic Routing: When a chat request comes in, the system must identify the tenant_id (via an API key or header), retrieve that specific tenant's System Prompt from the database, and query only their vectors.
+
+3. API Endpoints Required (RESTful):
+
+Admin/Tenant Management:
+
+POST /admin/tenants - Create a new tenant (generates tenant_id, API key, name).
+
+PUT /admin/tenants/{tenant_id} - Update tenant settings (System Prompt, LLM model preferences like temperature).
+
+Knowledge Base (Ingestion):
+
+POST /api/ingest/{tenant_id} - Upload text/PDF. The backend must chunk the text, vectorize it, and store it in the Vector DB with the correct tenant_id.
+
+Chat / Inference:
+
+POST /api/chat - The main webhook endpoint. It should receive a JSON payload (optimized for easy integration with automation tools like Make or n8n).
+
+Payload example: {"api_key": "...", "user_id": "phone_number", "message": "hello"}.
+
+The endpoint must retrieve context, generate the LLM response, save the interaction to a chat history table, and return the answer.
+
+4. Admin Dashboard (UI):
+
+Provide the code for a clean, intuitive web interface.
+
+Include branding elements (Header titled "iDone Chatbot Manager").
+
+Features: A table listing all tenants, a form to add a new tenant (Name, System Prompt), and a section to upload training data (text files/URLs) for a selected tenant.
+
+5. DevOps & Deployment:
+
+Provide a complete Dockerfile for the FastAPI backend.
+
+Provide a docker-compose.yml that orchestrates:
+
+The backend container.
+
+The database container (e.g., Postgres).
+
+The Vector DB container (if using a local one like Qdrant).
+
+Include a .env.example file listing all required environment variables (OPENAI_API_KEY, DB_URI, etc.).
+
+6. Output Instructions:
+Please provide the actual code files structured logically. Start with the project directory tree. Then, provide the docker-compose.yml, followed by the main.py (FastAPI), the database models, the RAG pipeline logic, and finally the HTML/JS for the dashboard. Ensure robust error handling and logging throughout the code.
+
+Now Create a step-by-step plan for each component before we start
