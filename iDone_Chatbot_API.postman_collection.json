@@ -1,0 +1,263 @@
+{
+  "info": {
+    "name": "iDone Chatbot API",
+    "description": "Postman collection for testing iDone Chatbot API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "admin_api_key",
+      "value": "admin_dev_key",
+      "type": "string"
+    },
+    {
+      "key": "tenant_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tenant_api_key",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "test_user_001",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Admin - Tenant Management",
+      "item": [
+        {
+          "name": "Create Tenant",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/admin/tenants",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "tenants"]
+            },
+            "header": [
+              {
+                "key": "X-Admin-Key",
+                "value": "{{admin_api_key}}",
+                "description": "Admin API key for authentication"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Company\",\n  \"system_prompt\": \"You are a helpful customer support assistant for Test Company.\",\n  \"llm_model\": \"gpt-4o-mini\",\n  \"temperature\": 0.7,\n  \"max_tokens\": 2000\n}"
+            }
+          }
+        },
+        {
+          "name": "List All Tenants",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/tenants",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "tenants"]
+            },
+            "header": [
+              {
+                "key": "X-Admin-Key",
+                "value": "{{admin_api_key}}",
+                "description": "Admin API key for authentication"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Get Tenant Details",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/tenants/{{tenant_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "tenants", "{{tenant_id}}"]
+            },
+            "header": [
+              {
+                "key": "X-Admin-Key",
+                "value": "{{admin_api_key}}",
+                "description": "Admin API key for authentication"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Update Tenant",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/admin/tenants/{{tenant_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "tenants", "{{tenant_id}}"]
+            },
+            "header": [
+              {
+                "key": "X-Admin-Key",
+                "value": "{{admin_api_key}}",
+                "description": "Admin API key for authentication"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Company Name\",\n  \"system_prompt\": \"You are an updated helpful assistant.\",\n  \"temperature\": 0.8\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Tenant",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/admin/tenants/{{tenant_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "tenants", "{{tenant_id}}"]
+            },
+            "header": [
+              {
+                "key": "X-Admin-Key",
+                "value": "{{admin_api_key}}",
+                "description": "Admin API key for authentication"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Knowledge Base - Ingest",
+      "item": [
+        {
+          "name": "Ingest Text Content",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/ingest/{{tenant_id}}/text",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ingest", "{{tenant_id}}", "text"]
+            },
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{tenant_api_key}}",
+                "description": "Tenant API key for authentication"
+              }
+            ],
+            "body": {
+              "mode": "form-data",
+              "formdata": [
+                {
+                  "key": "text",
+                  "value": "iDone Company was founded in 2020. We provide chatbot solutions for businesses. Our headquarters are in Israel. We offer 24/7 customer support.",
+                  "type": "text"
+                },
+                {
+                  "key": "filename",
+                  "value": "about_us.txt",
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload File (PDF/DOCX/TXT)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/ingest/{{tenant_id}}/file",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ingest", "{{tenant_id}}", "file"]
+            },
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{tenant_api_key}}",
+                "description": "Tenant API key for authentication"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chat & Conversation",
+      "item": [
+        {
+          "name": "Send Chat Message",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/chat",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{tenant_api_key}}\",\n  \"user_id\": \"{{user_id}}\",\n  \"message\": \"What is iDone Company?\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Chat History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/chat/history/{{user_id}}?limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "history", "{{user_id}}"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{tenant_api_key}}",
+                "description": "Tenant API key for authentication"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
