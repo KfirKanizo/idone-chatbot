@@ -58,7 +58,7 @@ async def check_db_connection() -> bool:
         from sqlalchemy import text
         async with async_engine.connect() as conn:
             result = await conn.execute(text("SELECT 1"))
-            await result.scalar()
+            result.scalar()
         return True
     except Exception as e:
         logger.error(f"Database connection failed: {e}")
