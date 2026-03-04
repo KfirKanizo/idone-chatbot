@@ -1,16 +1,16 @@
-version: '3.8'
-
 services:
   # -----------------------------------------------------------------------------
-  # PostgreSQL Database (Internal - not exposed to host)
+  # PostgreSQL Database
   # -----------------------------------------------------------------------------
   postgres:
     image: postgres:15-alpine
     container_name: idone_postgres
+    env_file:
+      - ./backend/.env
     environment:
-      POSTGRES_DB: ${DB_NAME:-idone_chatbot}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres_password_change_me}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     expose:
@@ -57,7 +57,7 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      DATABASE_URL: postgresql+asyncpg://${DB_USER:-postgres}:${DB_PASSWORD:-postgres_password_change_me}@postgres:5432/${DB_NAME:-idone_chatbot}
+      DATABASE_URL: postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
       QDRANT_HOST: qdrant
       QDRANT_PORT: 6333
     expose:
@@ -74,7 +74,7 @@ services:
       retries: 3
     networks:
       - idone_network
-      - ${DOCKER_NETWORK:-npm_network}
+      - proxy_network
     restart: unless-stopped
 
   # -----------------------------------------------------------------------------
@@ -91,7 +91,7 @@ services:
       - backend
     networks:
       - idone_network
-      - ${DOCKER_NETWORK:-npm_network}
+      - proxy_network
     restart: unless-stopped
 
 # -----------------------------------------------------------------------------
@@ -100,9 +100,9 @@ services:
 networks:
   idone_network:
     driver: bridge
-  npm_network:
+  proxy_network:
     external: true
-    name: ${DOCKER_NETWORK:-npm_network}
+    name: ${DOCKER_NETWORK:-proxy-network}
 
 # -----------------------------------------------------------------------------
 # Volumes
