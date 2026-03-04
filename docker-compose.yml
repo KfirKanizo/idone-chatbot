@@ -38,7 +38,7 @@ services:
       - "6333"
       - "6334"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:6333/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
