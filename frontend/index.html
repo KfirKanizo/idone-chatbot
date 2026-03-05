@@ -133,8 +133,8 @@
         </div>
     </div>
 
-    <!-- Edit Document Modal -->
-    <div id="editDocModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <!-- Edit Document Modal (higher z-index to appear above tenant details modal) -->
+    <div id="editDocModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[60]">
         <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div class="p-6 border-b border-gray-200 flex justify-between items-center">
                 <h3 class="text-lg font-semibold" id="editDocModalTitle">Edit Document</h3>
@@ -687,12 +687,43 @@
                 document.getElementById('editDocModal').classList.remove('hidden');
                 document.getElementById('editDocModal').classList.add('flex');
                 
-                // Store reference
                 window.currentEditDocId = docId;
                 
             } catch (e) {
                 showToast('Error loading document: ' + e.message, 'error');
             }
+        }
+        
+        function closeEditDocModal() {
+            document.getElementById('editDocModal').classList.add('hidden');
+            document.getElementById('editDocModal').classList.remove('flex');
+            window.currentEditDocId = null;
+        }
+        
+        async function saveDocumentEdit() {
+            if (!currentDetailTenant || !window.currentEditDocId) return;
+            
+            const newContent = document.getElementById('editDocContent').value;
+            
+            try {
+                const res = await fetch(`${API_BASE}/admin/tenants/${currentDetailTenant.id}/documents/${window.currentEditDocId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Key': getAdminKey()
+                    },
+                    body: JSON.stringify({ text: newContent })
+                });
+                
+                if (!res.ok) throw new Error('Failed to update document');
+                
+                showToast('Document updated successfully');
+                closeEditDocModal();
+                loadTenantDocuments();
+            } catch (e) {
+                showToast('Error updating document: ' + e.message, 'error');
+            }
+        }
         }
         
         // Chat History Tab Functions

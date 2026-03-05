@@ -83,32 +83,38 @@ class TenantService:
 
     async def list_tenants(self) -> List[dict]:
         """List all tenants with document and chat counts"""
-        result = await self.db.execute(
-            select(
-                Tenant.id,
-                Tenant.name,
-                Tenant.is_active,
-                Tenant.created_at,
-                func.count(Document.id).label('document_count'),
-                func.count(ChatHistory.id).label('chat_count')
-            )
-            .outerjoin(Document, Document.tenant_id == Tenant.id)
-            .outerjoin(ChatHistory, ChatHistory.tenant_id == Tenant.id)
-            .group_by(Tenant.id)
-            .order_by(Tenant.created_at.desc())
-        )
+        from sqlalchemy import literal_column
         
-        rows = result.all()
+        # First get all tenants
+        tenants_result = await self.db.execute(
+            select(Tenant).order_by(Tenant.created_at.desc())
+        )
+        tenants = tenants_result.scalars().all()
+        
+        # Get document counts separately
+        doc_counts_result = await self.db.execute(
+            select(Document.tenant_id, func.count(Document.id).label('count'))
+            .group_by(Document.tenant_id)
+        )
+        doc_counts = {row.tenant_id: row.count for row in doc_counts_result.all()}
+        
+        # Get chat counts separately
+        chat_counts_result = await self.db.execute(
+            select(ChatHistory.tenant_id, func.count(ChatHistory.id).label('count'))
+            .group_by(ChatHistory.tenant_id)
+        )
+        chat_counts = {row.tenant_id: row.count for row in chat_counts_result.all()}
+        
         return [
             {
-                "id": row.id,
-                "name": row.name,
-                "is_active": row.is_active,
-                "created_at": row.created_at,
-                "document_count": row.document_count or 0,
-                "chat_count": row.chat_count or 0
+                "id": tenant.id,
+                "name": tenant.name,
+                "is_active": tenant.is_active,
+                "created_at": tenant.created_at,
+                "document_count": doc_counts.get(tenant.id, 0),
+                "chat_count": chat_counts.get(tenant.id, 0)
             }
-            for row in rows
+            for tenant in tenants
         ]
 
     async def get_tenant_stats(self, tenant_id: str) -> Optional[dict]:
