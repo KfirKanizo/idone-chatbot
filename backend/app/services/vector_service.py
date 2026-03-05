@@ -53,29 +53,30 @@ class VectorService:
             if vectors:
                 logger.info(f"Inserting {len(vectors)} vectors, dimension: {len(vectors[0]) if vectors else 'unknown'}")
             
-            # Use Batch with points format for qdrant-client
             from qdrant_client.models import Batch
             
-            points = [
+            # Build lists for Batch
+            ids = [f"{document_id}_{i}" for i in range(len(chunks))]
+            payloads = [
                 {
-                    "id": f"{document_id}_{i}",
-                    "vector": vector,
-                    "payload": {
-                        "tenant_id": tenant_id,
-                        "document_id": document_id,
-                        "chunk_index": i,
-                        "text": chunk
-                    }
+                    "tenant_id": tenant_id,
+                    "document_id": document_id,
+                    "chunk_index": i,
+                    "text": chunk
                 }
-                for i, (chunk, vector) in enumerate(zip(chunks, vectors))
+                for i, chunk in enumerate(chunks)
             ]
             
             self.client.upsert(
                 collection_name=COLLECTION_NAME,
-                points=Batch(points=points)
+                points=Batch(
+                    ids=ids,
+                    vectors=vectors,
+                    payloads=payloads
+                )
             )
             
-            logger.info(f"Inserted {len(points)} vectors for document {document_id}")
+            logger.info(f"Inserted {len(vectors)} vectors for document {document_id}")
             return True
         except Exception as e:
             logger.error(f"Error inserting vectors: {e}")
