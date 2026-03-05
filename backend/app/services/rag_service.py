@@ -17,8 +17,7 @@ class RAGService:
         # Use HuggingFace serverless inference API for embeddings
         self.embeddings = HuggingFaceEndpointEmbeddings(
             model="sentence-transformers/all-MiniLM-L6-v2",
-            huggingfacehub_api_token=settings.huggingface_api_key,
-            model_kwargs={"task": "feature-extraction", "commit_hash": "main"}
+            huggingfacehub_api_token=settings.huggingface_api_key
         )
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
@@ -33,18 +32,14 @@ class RAGService:
         return chunks
 
     async def generate_embeddings(self, texts: List[str]) -> List[List[float]]:
-        """Generate embeddings for a list of texts"""
+        """Generate embeddings for a list of texts using HuggingFace API"""
         try:
             import asyncio
-            # Run sync embedding call in thread pool
             loop = asyncio.get_event_loop()
             embeddings = await loop.run_in_executor(None, self.embeddings.embed_documents, texts)
             
-            # Validate embeddings
             if not embeddings or len(embeddings) == 0:
-                raise ValueError("Empty embeddings response")
-            if not isinstance(embeddings[0], list):
-                raise ValueError(f"Invalid embedding format: {type(embeddings[0])}")
+                raise ValueError("Empty embeddings response from HuggingFace API")
                 
             return embeddings
         except Exception as e:
@@ -54,14 +49,14 @@ class RAGService:
             raise
 
     async def generate_query_embedding(self, query: str) -> List[float]:
-        """Generate embedding for a query"""
+        """Generate embedding for a query using HuggingFace API"""
         try:
             import asyncio
             loop = asyncio.get_event_loop()
             embedding = await loop.run_in_executor(None, self.embeddings.embed_query, query)
             
-            if not embedding or not isinstance(embedding, list):
-                raise ValueError(f"Invalid query embedding format: {type(embedding)}")
+            if not embedding:
+                raise ValueError("Empty query embedding response from HuggingFace API")
                 
             return embedding
         except Exception as e:
