@@ -3,12 +3,27 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 
+# ==================== LLM Provider Constants ====================
+
+LLM_PROVIDERS = {
+    "openai": ["gpt-4o", "gpt-4o-mini"],
+    "anthropic": ["claude-3-7-sonnet-20250219", "claude-3-5-sonnet-20241022"],
+    "gemini": ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-pro", "gemini-1.5-flash"],
+    "groq": ["llama-3.3-70b-versatile", "mixtral-8x7b-32768", "llama-3.1-70b-versatile", "llama-3.1-8b-instant"],
+    "deepseek": ["deepseek-chat", "deepseek-reasoner"],
+    "grok": ["grok-2", "grok-2-vision-1212", "grok-beta"],
+    "cohere": ["command-r-plus", "command-r", "command"],
+}
+
+
 # ==================== Tenant Schemas ====================
 
 class TenantCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     system_prompt: Optional[str] = "You are a helpful assistant."
-    llm_model: Optional[str] = "llama-3.1-8b-instant"
+    llm_provider: Optional[str] = "groq"
+    llm_model: Optional[str] = "llama-3.3-70b-versatile"
+    llm_api_key: Optional[str] = None
     temperature: Optional[float] = 0.7
     max_tokens: Optional[int] = 2000
 
@@ -16,7 +31,9 @@ class TenantCreate(BaseModel):
 class TenantUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     system_prompt: Optional[str] = None
+    llm_provider: Optional[str] = None
     llm_model: Optional[str] = None
+    llm_api_key: Optional[str] = None
     temperature: Optional[float] = Field(None, ge=0, le=2)
     max_tokens: Optional[int] = Field(None, ge=1, le=32000)
     is_active: Optional[bool] = None
@@ -27,6 +44,7 @@ class TenantResponse(BaseModel):
     name: str
     api_key: str
     system_prompt: str
+    llm_provider: str
     llm_model: str
     temperature: float
     max_tokens: int

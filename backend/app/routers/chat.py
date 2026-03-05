@@ -127,7 +127,9 @@ async def chat(
         user_id=request.user_id,
         user_message=request.message,
         system_prompt=tenant.system_prompt,
+        llm_provider=tenant.llm_provider,
         llm_model=tenant.llm_model,
+        llm_api_key=tenant.llm_api_key,
         temperature=tenant.temperature,
         max_tokens=tenant.max_tokens
     )

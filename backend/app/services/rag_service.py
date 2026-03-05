@@ -7,6 +7,7 @@ from sqlalchemy import select, asc
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.services.vector_service import vector_service
+from app.services.llm_factory import llm_factory
 from app.models import ChatHistory
 from loguru import logger
 import hashlib
@@ -191,7 +192,9 @@ class RAGService:
         user_id: str,
         user_message: str,
         system_prompt: str,
+        llm_provider: str,
         llm_model: str,
+        llm_api_key: Optional[str],
         temperature: float,
         max_tokens: int,
         history_limit: int = 5
@@ -218,11 +221,13 @@ class RAGService:
             
             messages.append(HumanMessage(content=user_message))
             
-            llm = ChatGroq(
-                model=settings.groq_model,
+            # Use LLM factory for dynamic client creation (supports BYOK)
+            llm = llm_factory.create_llm_client(
+                provider=llm_provider,
+                model=llm_model,
+                tenant_api_key=llm_api_key,
                 temperature=temperature,
-                max_tokens=max_tokens,
-                groq_api_key=settings.groq_api_key
+                max_tokens=max_tokens
             )
             
             response = llm.invoke(messages)
