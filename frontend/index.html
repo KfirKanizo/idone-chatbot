@@ -640,7 +640,15 @@
                     if (result.success) {
                         showToast(`Successfully uploaded ${result.successful} of ${result.total_files} file(s)`);
                     } else {
-                        showToast(`Uploaded ${result.successful}/${result.total_files} file(s). ${result.failed} failed.`, 'error');
+                        // Show details about which files failed
+                        let msg = `Uploaded ${result.successful}/${result.total_files} file(s).`;
+                        if (result.results && result.results.length > 0) {
+                            const failedFiles = result.results.filter(r => !r.success);
+                            if (failedFiles.length > 0) {
+                                msg += ` Failed: ${failedFiles.map(f => f.filename).join(', ')}`;
+                            }
+                        }
+                        showToast(msg, 'error');
                     }
                     
                     loadAllDocuments();
