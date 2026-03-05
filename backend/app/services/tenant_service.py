@@ -82,7 +82,7 @@ class TenantService:
         return True
 
     async def list_tenants(self) -> List[dict]:
-        """List all tenants with document and chat counts"""
+        """List all tenants with document and unique user counts"""
         from sqlalchemy import literal_column
         
         # First get all tenants
@@ -98,12 +98,12 @@ class TenantService:
         )
         doc_counts = {row.tenant_id: row.count for row in doc_counts_result.all()}
         
-        # Get chat counts separately
-        chat_counts_result = await self.db.execute(
-            select(ChatHistory.tenant_id, func.count(ChatHistory.id).label('count'))
+        # Get unique user counts (not total messages)
+        user_counts_result = await self.db.execute(
+            select(ChatHistory.tenant_id, func.count(func.distinct(ChatHistory.user_id)).label('count'))
             .group_by(ChatHistory.tenant_id)
         )
-        chat_counts = {row.tenant_id: row.count for row in chat_counts_result.all()}
+        user_counts = {row.tenant_id: row.count for row in user_counts_result.all()}
         
         return [
             {
@@ -112,7 +112,7 @@ class TenantService:
                 "is_active": tenant.is_active,
                 "created_at": tenant.created_at,
                 "document_count": doc_counts.get(tenant.id, 0),
-                "chat_count": chat_counts.get(tenant.id, 0)
+                "chat_count": user_counts.get(tenant.id, 0)
             }
             for tenant in tenants
         ]
