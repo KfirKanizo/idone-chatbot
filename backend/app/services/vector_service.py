@@ -53,10 +53,11 @@ class VectorService:
             if vectors:
                 logger.info(f"Inserting {len(vectors)} vectors, dimension: {len(vectors[0]) if vectors else 'unknown'}")
             
-            # Build points with proper format for qdrant-client 1.7.x
-            points = []
-            for i, (chunk, vector) in enumerate(zip(chunks, vectors)):
-                points.append({
+            # Use Batch with points format for qdrant-client
+            from qdrant_client.models import Batch
+            
+            points = [
+                {
                     "id": f"{document_id}_{i}",
                     "vector": vector,
                     "payload": {
@@ -65,11 +66,13 @@ class VectorService:
                         "chunk_index": i,
                         "text": chunk
                     }
-                })
+                }
+                for i, (chunk, vector) in enumerate(zip(chunks, vectors))
+            ]
             
             self.client.upsert(
                 collection_name=COLLECTION_NAME,
-                points=points
+                points=Batch(points=points)
             )
             
             logger.info(f"Inserted {len(points)} vectors for document {document_id}")
