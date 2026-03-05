@@ -122,7 +122,9 @@
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">
                         <i class="fas fa-chart-area text-blue-600 mr-2"></i>Activity Timeline
                     </h3>
-                    <canvas id="timelineChart" height="250"></canvas>
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="timelineChart"></canvas>
+                    </div>
                 </div>
 
                 <!-- Usage by Tenant Chart -->
@@ -130,7 +132,9 @@
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">
                         <i class="fas fa-chart-bar text-purple-600 mr-2"></i>Usage by Tenant
                     </h3>
-                    <canvas id="tenantChart" height="250"></canvas>
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="tenantChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -460,6 +464,12 @@
 
         async function loadActivityTimeline() {
             try {
+                // Destroy existing chart first
+                if (timelineChart) {
+                    timelineChart.destroy();
+                    timelineChart = null;
+                }
+                
                 const days = document.getElementById('timelineRange').value;
                 const res = await fetch(`${API_BASE}/admin/analytics/activity-timeline?days=${days}`, {
                     headers: { 'X-Admin-Key': getAdminKey() }
@@ -475,12 +485,6 @@
                 const users = data.map(d => d.user_count);
                 
                 const ctx = document.getElementById('timelineChart').getContext('2d');
-                
-                if (timelineChart) {
-                    timelineChart.destroy();
-                }
-                
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                 
                 timelineChart = new Chart(ctx, {
                     type: 'line',
@@ -523,6 +527,12 @@
 
         async function loadUsageByTenant() {
             try {
+                // Destroy existing chart first
+                if (tenantChart) {
+                    tenantChart.destroy();
+                    tenantChart = null;
+                }
+                
                 const res = await fetch(`${API_BASE}/admin/analytics/usage-by-tenant?limit=10`, {
                     headers: { 'X-Admin-Key': getAdminKey() }
                 });
@@ -534,12 +544,6 @@
                 const tokens = data.map(d => d.estimated_tokens);
                 
                 const ctx = document.getElementById('tenantChart').getContext('2d');
-                
-                if (tenantChart) {
-                    tenantChart.destroy();
-                }
-                
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                 
                 tenantChart = new Chart(ctx, {
                     type: 'bar',
