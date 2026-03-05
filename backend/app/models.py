@@ -55,6 +55,7 @@ class ChatHistory(Base):
     user_id = Column(String(255), nullable=False, index=True)
     message = Column(Text, nullable=False)
     response = Column(Text, nullable=False)
+    token_count = Column(Integer, default=0)
     context_used = Column(JSON, default=[])
     extra_data = Column(JSON, default={})
     created_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)
