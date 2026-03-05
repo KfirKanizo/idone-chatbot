@@ -34,22 +34,20 @@ class RAGService:
         """Generate embeddings for a list of texts"""
         try:
             embeddings = self.embeddings.embed_documents(texts)
-            if not embeddings or (isinstance(embeddings[0], str) and embeddings[0] == 'error'):
-                raise ValueError(f"HuggingFace API returned error: {embeddings}")
+            logger.info(f"Generated {len(embeddings)} embeddings, first dim: {len(embeddings[0]) if embeddings else 'none'}")
             return embeddings
         except Exception as e:
-            logger.error(f"Error generating embeddings: {e}")
+            logger.error(f"Error generating embeddings: {type(e).__name__}: {e}")
             raise
 
     async def generate_query_embedding(self, query: str) -> List[float]:
         """Generate embedding for a query"""
         try:
             embedding = self.embeddings.embed_query(query)
-            if not embedding or (isinstance(embedding, str) and embedding == 'error'):
-                raise ValueError(f"HuggingFace API returned error: {embedding}")
+            logger.info(f"Generated query embedding, dim: {len(embedding) if embedding else 'none'}")
             return embedding
         except Exception as e:
-            logger.error(f"Error generating query embedding: {e}")
+            logger.error(f"Error generating query embedding: {type(e).__name__}: {e}")
             raise
 
     async def ingest_document(
