@@ -514,29 +514,81 @@ async def upload_multiple_files(
         
         for file in files:
             try:
+                # Check if filename exists
+                if not file.filename:
+                    results.append({"filename": "unknown", "success": False, "error": "File has no name"})
+                    failed += 1
+                    continue
+                
+                filename = file.filename
+                file_ext = filename.lower().split('.')[-1] if '.' in filename else ''
+                
+                # Check file extension
+                supported_extensions = ['txt', 'pdf', 'docx', 'doc', 'md']
+                if file_ext not in supported_extensions:
+                    results.append({
+                        "filename": filename, 
+                        "success": False, 
+                        "error": f"Unsupported file type '.{file_ext}'. Supported: {', '.join(supported_extensions)}"
+                    })
+                    failed += 1
+                    continue
+                
                 content = await file.read()
                 
+                # Check if file is empty
                 if not content:
-                    results.append({"filename": file.filename, "success": False, "error": "Empty file"})
+                    results.append({"filename": filename, "success": False, "error": "File is empty (0 bytes)"})
                     failed += 1
                     continue
-                    
+                
+                # Check file size
                 if len(content) > 10 * 1024 * 1024:
-                    results.append({"filename": file.filename, "success": False, "error": "File too large (max 10MB)"})
+                    results.append({
+                        "filename": filename, 
+                        "success": False, 
+                        "error": f"File too large ({len(content) / (1024*1024):.1f}MB). Maximum is 10MB"
+                    })
                     failed += 1
                     continue
                 
-                text_content = process_file_content(file.filename or "unknown.txt", content)
+                # Try to extract text
+                try:
+                    text_content = process_file_content(filename, content)
+                except Exception as extract_error:
+                    results.append({
+                        "filename": filename, 
+                        "success": False, 
+                        "error": f"Failed to read file: {str(extract_error)}"
+                    })
+                    failed += 1
+                    continue
                 
+                # Check if text was extracted
                 if not text_content or not text_content.strip():
-                    results.append({"filename": file.filename or "unknown", "success": False, "error": "Could not extract text"})
+                    results.append({
+                        "filename": filename, 
+                        "success": False, 
+                        "error": "No text could be extracted. File may be corrupted, encrypted, or contain only images"
+                    })
                     failed += 1
                     continue
                 
+                # Check minimum text length
+                if len(text_content.strip()) < 50:
+                    results.append({
+                        "filename": filename, 
+                        "success": False, 
+                        "error": f"Text too short ({len(text_content.strip())} chars). Minimum is 50 characters"
+                    })
+                    failed += 1
+                    continue
+                
+                # Clean and process text
                 text_content = clean_text(text_content)
                 document_id = str(uuid.uuid4())
-                filename = file.filename or "unknown_file"
                 
+                # Ingest document
                 result = await rag_service.ingest_document(
                     tenant_id=tenant.id,
                     document_id=document_id,
@@ -544,34 +596,44 @@ async def upload_multiple_files(
                     filename=filename
                 )
                 
-                file_type = filename.lower().split('.')[-1] if '.' in filename else 'unknown'
+                if not result["success"]:
+                    results.append({
+                        "filename": filename, 
+                        "success": False, 
+                        "error": result.get("message", "Failed to index document")
+                    })
+                    failed += 1
+                    continue
                 
+                # Save to database
+                file_type = file_ext
                 document = Document(
                     id=document_id,
                     tenant_id=tenant.id,
-                    filename=file.filename,
+                    filename=filename,
                     file_type=file_type,
                     content=text_content[:5000],
                     chunk_count=result["chunks_created"],
-                    is_indexed=result["success"]
+                    is_indexed=True
                 )
                 db.add(document)
                 
                 results.append({
-                    "filename": file.filename,
-                    "success": result["success"],
+                    "filename": filename,
+                    "success": True,
                     "document_id": document_id,
                     "chunks_created": result["chunks_created"]
                 })
-                
-                if result["success"]:
-                    successful += 1
-                else:
-                    failed += 1
+                successful += 1
+                logger.info(f"Successfully uploaded: {filename} ({result['chunks_created']} chunks)")
                     
             except Exception as e:
                 logger.error(f"Error processing file {file.filename}: {e}")
-                results.append({"filename": file.filename, "success": False, "error": str(e)})
+                results.append({
+                    "filename": file.filename or "unknown", 
+                    "success": False, 
+                    "error": f"Unexpected error: {str(e)}"
+                })
                 failed += 1
         
         await db.commit()
