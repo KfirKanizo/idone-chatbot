@@ -299,10 +299,10 @@
         const API_BASE = 'https://chat.idone.co.il';
         let tenants = [];
         let currentEditTenant = null;
+        let currentDetailTenant = null;
         let currentChatUser = null;
 
-        // ==================== Tenant Details Modal ====================
-        
+        // ==================== Helper Functions ====================
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
@@ -461,9 +461,6 @@
         }
 
         // ==================== Tenant Details Modal ====================
-        
-        let currentDetailTenant = null;
-        let currentChatUser = null;
         
         async function openTenantDetails(tenantId) {
             try {
