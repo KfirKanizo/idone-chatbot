@@ -480,6 +480,8 @@
                     timelineChart.destroy();
                 }
                 
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                
                 timelineChart = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -536,6 +538,8 @@
                 if (tenantChart) {
                     tenantChart.destroy();
                 }
+                
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                 
                 tenantChart = new Chart(ctx, {
                     type: 'bar',
