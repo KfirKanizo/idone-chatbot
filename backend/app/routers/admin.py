@@ -292,6 +292,48 @@ async def list_tenant_documents(
     return documents
 
 
+@router.get(
+    "/tenants/{tenant_id}/documents/{document_id}",
+    summary="Get Document Details",
+    description="""
+    Get a specific document's details including content.
+    """,
+    response_description="Document details"
+)
+async def get_document(
+    tenant_id: str,
+    document_id: str,
+    db: AsyncSession = Depends(get_db),
+    _: bool = Depends(verify_admin_key)
+):
+    """
+    Retrieve a specific document with its content.
+    """
+    result = await db.execute(
+        select(Document)
+        .where(Document.id == document_id)
+        .where(Document.tenant_id == tenant_id)
+    )
+    document = result.scalar_one_or_none()
+    
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+    
+    return {
+        "id": document.id,
+        "tenant_id": document.tenant_id,
+        "filename": document.filename,
+        "file_type": document.file_type,
+        "content": document.content,
+        "chunk_count": document.chunk_count,
+        "is_indexed": document.is_indexed,
+        "created_at": document.created_at
+    }
+
+
 @router.delete(
     "/tenants/{tenant_id}/documents/{document_id}",
     status_code=status.HTTP_204_NO_CONTENT,
