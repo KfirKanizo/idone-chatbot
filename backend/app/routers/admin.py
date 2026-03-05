@@ -492,93 +492,105 @@ async def upload_multiple_files(
     **Returns:**
     - Summary of successful/failed uploads
     """
-    tenant_service = TenantService(db)
-    tenant = await tenant_service.get_tenant_by_id(tenant_id)
-    
-    if not tenant:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Tenant not found"
-        )
-    
-    if not tenant.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Tenant is inactive"
-        )
-    
-    results = []
-    successful = 0
-    failed = 0
-    
-    for file in files:
-        try:
-            content = await file.read()
-            
-            if not content:
-                results.append({"filename": file.filename, "success": False, "error": "Empty file"})
-                failed += 1
-                continue
-                
-            if len(content) > 10 * 1024 * 1024:
-                results.append({"filename": file.filename, "success": False, "error": "File too large (max 10MB)"})
-                failed += 1
-                continue
-            
-            text_content = process_file_content(file.filename or "unknown.txt", content)
-            
-            if not text_content or not text_content.strip():
-                results.append({"filename": file.filename or "unknown", "success": False, "error": "Could not extract text"})
-                failed += 1
-                continue
-            
-            text_content = clean_text(text_content)
-            document_id = str(uuid.uuid4())
-            filename = file.filename or "unknown_file"
-            
-            result = await rag_service.ingest_document(
-                tenant_id=tenant.id,
-                document_id=document_id,
-                text=text_content,
-                filename=filename
+    try:
+        tenant_service = TenantService(db)
+        tenant = await tenant_service.get_tenant_by_id(tenant_id)
+        
+        if not tenant:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Tenant not found"
             )
-            
-            file_type = filename.lower().split('.')[-1] if '.' in filename else 'unknown'
-            
-            document = Document(
-                id=document_id,
-                tenant_id=tenant.id,
-                filename=file.filename,
-                file_type=file_type,
-                content=text_content[:5000],
-                chunk_count=result["chunks_created"],
-                is_indexed=result["success"]
+        
+        if not tenant.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Tenant is inactive"
             )
-            db.add(document)
-            
-            results.append({
-                "filename": file.filename,
-                "success": result["success"],
-                "document_id": document_id,
-                "chunks_created": result["chunks_created"]
-            })
-            
-            if result["success"]:
-                successful += 1
-            else:
-                failed += 1
+        
+        results = []
+        successful = 0
+        failed = 0
+        
+        for file in files:
+            try:
+                content = await file.read()
                 
-        except Exception as e:
-            logger.error(f"Error processing file {file.filename}: {e}")
-            results.append({"filename": file.filename, "success": False, "error": str(e)})
-            failed += 1
-    
-    await db.commit()
-    
-    return MultiIngestResponse(
-        success=failed == 0,
-        total_files=len(files),
-        successful=successful,
-        failed=failed,
-        results=results
-    )
+                if not content:
+                    results.append({"filename": file.filename, "success": False, "error": "Empty file"})
+                    failed += 1
+                    continue
+                    
+                if len(content) > 10 * 1024 * 1024:
+                    results.append({"filename": file.filename, "success": False, "error": "File too large (max 10MB)"})
+                    failed += 1
+                    continue
+                
+                text_content = process_file_content(file.filename or "unknown.txt", content)
+                
+                if not text_content or not text_content.strip():
+                    results.append({"filename": file.filename or "unknown", "success": False, "error": "Could not extract text"})
+                    failed += 1
+                    continue
+                
+                text_content = clean_text(text_content)
+                document_id = str(uuid.uuid4())
+                filename = file.filename or "unknown_file"
+                
+                result = await rag_service.ingest_document(
+                    tenant_id=tenant.id,
+                    document_id=document_id,
+                    text=text_content,
+                    filename=filename
+                )
+                
+                file_type = filename.lower().split('.')[-1] if '.' in filename else 'unknown'
+                
+                document = Document(
+                    id=document_id,
+                    tenant_id=tenant.id,
+                    filename=file.filename,
+                    file_type=file_type,
+                    content=text_content[:5000],
+                    chunk_count=result["chunks_created"],
+                    is_indexed=result["success"]
+                )
+                db.add(document)
+                
+                results.append({
+                    "filename": file.filename,
+                    "success": result["success"],
+                    "document_id": document_id,
+                    "chunks_created": result["chunks_created"]
+                })
+                
+                if result["success"]:
+                    successful += 1
+                else:
+                    failed += 1
+                    
+            except Exception as e:
+                logger.error(f"Error processing file {file.filename}: {e}")
+                results.append({"filename": file.filename, "success": False, "error": str(e)})
+                failed += 1
+        
+        await db.commit()
+        
+        return MultiIngestResponse(
+            success=failed == 0,
+            total_files=len(files),
+            successful=successful,
+            failed=failed,
+            results=results
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in upload_multiple_files: {e}")
+        return MultiIngestResponse(
+            success=False,
+            total_files=0,
+            successful=0,
+            failed=1,
+            results=[{"filename": "unknown", "success": False, "error": str(e)}]
+        )

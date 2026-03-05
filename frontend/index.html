@@ -631,7 +631,10 @@
                         body: formData
                     });
                     
-                    if (!res.ok) throw new Error('Upload failed');
+                    if (!res.ok) {
+                        const errorText = await res.text();
+                        throw new Error(`Upload failed (${res.status}): ${errorText}`);
+                    }
                     const result = await res.json();
                     
                     if (result.success) {
