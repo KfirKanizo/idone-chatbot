@@ -33,11 +33,16 @@ class RAGService:
     async def generate_embeddings(self, texts: List[str]) -> List[List[float]]:
         """Generate embeddings for a list of texts"""
         try:
+            import json
             embeddings = self.embeddings.embed_documents(texts)
-            logger.info(f"Generated {len(embeddings)} embeddings, first dim: {len(embeddings[0]) if embeddings else 'none'}")
+            logger.info(f"Embeddings response type: {type(embeddings)}, len: {len(embeddings) if embeddings else 0}")
+            if embeddings:
+                logger.info(f"First embedding type: {type(embeddings[0])}, value preview: {str(embeddings[0])[:100]}")
             return embeddings
         except Exception as e:
+            import traceback
             logger.error(f"Error generating embeddings: {type(e).__name__}: {e}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
             raise
 
     async def generate_query_embedding(self, query: str) -> List[float]:
