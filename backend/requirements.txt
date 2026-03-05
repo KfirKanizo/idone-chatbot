@@ -15,7 +15,6 @@ qdrant-client==1.7.3
 # LLM & RAG (LangChain) - use latest compatible versions
 langchain>=0.1.0
 langchain-groq>=0.1.0
-langchain-community>=0.0.10
 langchain-huggingface>=0.0.1
 
 # Text Processing
