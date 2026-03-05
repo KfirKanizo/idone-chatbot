@@ -1,5 +1,5 @@
 from typing import List, Dict, Any, Optional
-from langchain_openai import OpenAIEmbeddings
+from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
 from langchain_groq import ChatGroq
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import SystemMessage, HumanMessage, AIMessage
@@ -14,9 +14,9 @@ import hashlib
 
 class RAGService:
     def __init__(self):
-        self.embeddings = OpenAIEmbeddings(
-            model=settings.openai_embedding_model,
-            openai_api_key=settings.openai_api_key or settings.groq_api_key
+        self.embeddings = HuggingFaceInferenceAPIEmbeddings(
+            model_name="BAAI/bge-large-en-v1.5",
+            api_key=settings.huggingface_api_key
         )
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,

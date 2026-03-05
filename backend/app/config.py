@@ -49,6 +49,9 @@ class Settings(BaseSettings):
     groq_model: str = Field(default="llama-3.1-8b-instant", env="GROQ_MODEL")
     groq_embedding_model: str = Field(default="multilingual-e5-large", env="GROQ_EMBEDDING_MODEL")
 
+    # HuggingFace
+    huggingface_api_key: str = Field(default="", env="HUGGINGFACE_API_KEY")
+
     # Admin
     admin_api_key: str = Field(default="admin_secret", env="ADMIN_API_KEY")
 
