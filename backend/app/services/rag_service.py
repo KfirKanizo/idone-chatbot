@@ -1,5 +1,5 @@
 from typing import List, Dict, Any, Optional
-from langchain_huggingface import HuggingFaceEndpointEmbeddings
+from langchain_cohere import CohereEmbeddings
 from langchain_groq import ChatGroq
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import SystemMessage, HumanMessage, AIMessage
@@ -14,10 +14,10 @@ import hashlib
 
 class RAGService:
     def __init__(self):
-        # Use HuggingFace serverless inference API for embeddings
-        self.embeddings = HuggingFaceEndpointEmbeddings(
-            model="sentence-transformers/all-MiniLM-L6-v2",
-            huggingfacehub_api_token=settings.huggingface_api_key
+        # Use Cohere for embeddings (free API, minimal dependencies)
+        self.embeddings = CohereEmbeddings(
+            cohere_api_key=settings.cohere_api_key,
+            model="embed-english-v3.0"
         )
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,

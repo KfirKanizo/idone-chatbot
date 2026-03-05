@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     # HuggingFace
     huggingface_api_key: str = Field(default="", env="HUGGINGFACE_API_KEY")
 
+    # Cohere (for embeddings)
+    cohere_api_key: str = Field(default="", env="COHERE_API_KEY")
+
     # Admin
     admin_api_key: str = Field(default="admin_secret", env="ADMIN_API_KEY")
 
