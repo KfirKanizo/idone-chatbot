@@ -14,8 +14,11 @@ import hashlib
 
 class RAGService:
     def __init__(self):
+        # Use lighter model for low RAM environments (2GB)
+        # all-MiniLM-L6-v2 is ~80MB, works on 2GB RAM
+        # Produces 384-dimensional vectors (need to update Qdrant)
         self.embeddings = HuggingFaceEmbeddings(
-            model_name="BAAI/bge-large-en-v1.5",
+            model_name="all-MiniLM-L6-v2",
             model_kwargs={'device': 'cpu'},
             encode_kwargs={'normalize_embeddings': True}
         )
