@@ -4,7 +4,7 @@
 
 -- Integration Logs: Track outbound webhook/API calls from the chat flow
 CREATE TABLE IF NOT EXISTS integration_logs (
-    id VARCHAR(36) PRIMARY KEY DEFAULT (replace(uuid_generate_v4()::text, '-', '')),
+    id VARCHAR(36) PRIMARY KEY,
     tenant_id VARCHAR(36) REFERENCES tenants(id) ON DELETE CASCADE,
     target_url VARCHAR(2048) NOT NULL,
     method VARCHAR(10) NOT NULL,
@@ -19,7 +19,7 @@ CREATE INDEX IF NOT EXISTS idx_integration_logs_created_at ON integration_logs(c
 
 -- Audit Logs: Track administrative actions and configuration changes
 CREATE TABLE IF NOT EXISTS audit_logs (
-    id VARCHAR(36) PRIMARY KEY DEFAULT (replace(uuid_generate_v4()::text, '-', '')),
+    id VARCHAR(36) PRIMARY KEY,
     tenant_id VARCHAR(36) REFERENCES tenants(id) ON DELETE CASCADE,
     action VARCHAR(100) NOT NULL,
     details JSONB,
