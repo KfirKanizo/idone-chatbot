@@ -56,7 +56,7 @@ class VectorService:
             # Use REST API with correct format: separate ids, vectors, payloads
             import httpx
             
-            ids = [f"{document_id}_{i}" for i in range(len(chunks))]
+            ids = [i for i in range(len(chunks))]  # Use integers: 0, 1, 2...
             payloads = [
                 {
                     "tenant_id": tenant_id,
