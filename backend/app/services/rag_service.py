@@ -32,14 +32,18 @@ class RAGService:
         return chunks
 
     async def generate_embeddings(self, texts: List[str]) -> List[List[float]]:
-        """Generate embeddings for a list of texts using HuggingFace API"""
+        """Generate embeddings for a list of texts using Cohere API"""
         try:
             import asyncio
             loop = asyncio.get_event_loop()
             embeddings = await loop.run_in_executor(None, self.embeddings.embed_documents, texts)
             
+            # Debug: log embedding details
+            if embeddings and len(embeddings) > 0:
+                logger.info(f"Cohere embeddings: count={len(embeddings)}, dimension={len(embeddings[0]) if hasattr(embeddings[0], '__len__') else 'unknown'}")
+            
             if not embeddings or len(embeddings) == 0:
-                raise ValueError("Empty embeddings response from HuggingFace API")
+                raise ValueError("Empty embeddings response from Cohere API")
                 
             return embeddings
         except Exception as e:

@@ -49,6 +49,10 @@ class VectorService:
         vectors: List[List[float]]
     ) -> bool:
         try:
+            # Debug: log vector dimensions
+            if vectors:
+                logger.info(f"Inserting {len(vectors)} vectors, dimension: {len(vectors[0]) if vectors else 'unknown'}")
+            
             points = [
                 PointStruct(
                     id=f"{document_id}_{i}",
@@ -63,6 +67,7 @@ class VectorService:
                 for i, (chunk, vector) in enumerate(zip(chunks, vectors))
             ]
             
+            # Use points directly (not wrapped)
             self.client.upsert(
                 collection_name=COLLECTION_NAME,
                 points=points
