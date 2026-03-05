@@ -33,11 +33,22 @@ class RAGService:
     async def generate_embeddings(self, texts: List[str]) -> List[List[float]]:
         """Generate embeddings for a list of texts"""
         try:
-            import json
             embeddings = self.embeddings.embed_documents(texts)
-            logger.info(f"Embeddings response type: {type(embeddings)}, len: {len(embeddings) if embeddings else 0}")
-            if embeddings:
-                logger.info(f"First embedding type: {type(embeddings[0])}, value preview: {str(embeddings[0])[:100]}")
+            logger.info(f"Embeddings response: type={type(embeddings)}, value={str(embeddings)[:500]}")
+            
+            # Handle HuggingFace inference API response format
+            if isinstance(embeddings, dict):
+                # Might be {'embedding': [...]} or similar
+                if 'embedding' in embeddings:
+                    embeddings = [embeddings['embedding']]
+                elif 'embeddings' in embeddings:
+                    embeddings = embeddings['embeddings']
+                elif embeddings.get('error'):
+                    raise ValueError(f"HuggingFace API error: {embeddings.get('error')}")
+            
+            if not embeddings or len(embeddings) == 0:
+                raise ValueError(f"Empty embeddings response: {embeddings}")
+                
             return embeddings
         except Exception as e:
             import traceback
@@ -49,10 +60,23 @@ class RAGService:
         """Generate embedding for a query"""
         try:
             embedding = self.embeddings.embed_query(query)
-            logger.info(f"Generated query embedding, dim: {len(embedding) if embedding else 'none'}")
+            logger.info(f"Query embedding response: type={type(embedding)}, value preview={str(embedding)[:100]}")
+            
+            # Handle dict response
+            if isinstance(embedding, dict):
+                if 'embedding' in embedding:
+                    embedding = embedding['embedding']
+                elif embedding.get('error'):
+                    raise ValueError(f"HuggingFace API error: {embedding.get('error')}")
+            
+            if not embedding:
+                raise ValueError(f"Empty query embedding response: {embedding}")
+                
             return embedding
         except Exception as e:
+            import traceback
             logger.error(f"Error generating query embedding: {type(e).__name__}: {e}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
             raise
 
     async def ingest_document(
