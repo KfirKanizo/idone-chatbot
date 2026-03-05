@@ -1,5 +1,5 @@
 from typing import List, Dict, Any, Optional
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_groq import ChatGroq
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import SystemMessage, HumanMessage, AIMessage
@@ -14,13 +14,11 @@ import hashlib
 
 class RAGService:
     def __init__(self):
-        # Use lighter model for low RAM environments (2GB)
-        # all-MiniLM-L6-v2 is ~80MB, works on 2GB RAM
-        # Produces 384-dimensional vectors (need to update Qdrant)
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name="all-MiniLM-L6-v2",
-            model_kwargs={'device': 'cpu'},
-            encode_kwargs={'normalize_embeddings': True}
+        # Use HuggingFace serverless inference API for embeddings
+        self.embeddings = HuggingFaceEndpointEmbeddings(
+            model="sentence-transformers/all-MiniLM-L6-v2",
+            huggingfacehub_api_token=settings.huggingface_api_key,
+            model_kwargs={"task": "feature-extraction", "commit_hash": "main"}
         )
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
@@ -37,21 +35,16 @@ class RAGService:
     async def generate_embeddings(self, texts: List[str]) -> List[List[float]]:
         """Generate embeddings for a list of texts"""
         try:
-            embeddings = self.embeddings.embed_documents(texts)
-            logger.info(f"Embeddings response: type={type(embeddings)}, value={str(embeddings)[:500]}")
+            import asyncio
+            # Run sync embedding call in thread pool
+            loop = asyncio.get_event_loop()
+            embeddings = await loop.run_in_executor(None, self.embeddings.embed_documents, texts)
             
-            # Handle HuggingFace inference API response format
-            if isinstance(embeddings, dict):
-                # Might be {'embedding': [...]} or similar
-                if 'embedding' in embeddings:
-                    embeddings = [embeddings['embedding']]
-                elif 'embeddings' in embeddings:
-                    embeddings = embeddings['embeddings']
-                elif embeddings.get('error'):
-                    raise ValueError(f"HuggingFace API error: {embeddings.get('error')}")
-            
+            # Validate embeddings
             if not embeddings or len(embeddings) == 0:
-                raise ValueError(f"Empty embeddings response: {embeddings}")
+                raise ValueError("Empty embeddings response")
+            if not isinstance(embeddings[0], list):
+                raise ValueError(f"Invalid embedding format: {type(embeddings[0])}")
                 
             return embeddings
         except Exception as e:
@@ -63,18 +56,12 @@ class RAGService:
     async def generate_query_embedding(self, query: str) -> List[float]:
         """Generate embedding for a query"""
         try:
-            embedding = self.embeddings.embed_query(query)
-            logger.info(f"Query embedding response: type={type(embedding)}, value preview={str(embedding)[:100]}")
+            import asyncio
+            loop = asyncio.get_event_loop()
+            embedding = await loop.run_in_executor(None, self.embeddings.embed_query, query)
             
-            # Handle dict response
-            if isinstance(embedding, dict):
-                if 'embedding' in embedding:
-                    embedding = embedding['embedding']
-                elif embedding.get('error'):
-                    raise ValueError(f"HuggingFace API error: {embedding.get('error')}")
-            
-            if not embedding:
-                raise ValueError(f"Empty query embedding response: {embedding}")
+            if not embedding or not isinstance(embedding, list):
+                raise ValueError(f"Invalid query embedding format: {type(embedding)}")
                 
             return embedding
         except Exception as e:
