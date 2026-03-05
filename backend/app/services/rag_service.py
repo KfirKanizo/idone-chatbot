@@ -34,6 +34,8 @@ class RAGService:
         """Generate embeddings for a list of texts"""
         try:
             embeddings = self.embeddings.embed_documents(texts)
+            if not embeddings or (isinstance(embeddings[0], str) and embeddings[0] == 'error'):
+                raise ValueError(f"HuggingFace API returned error: {embeddings}")
             return embeddings
         except Exception as e:
             logger.error(f"Error generating embeddings: {e}")
@@ -43,6 +45,8 @@ class RAGService:
         """Generate embedding for a query"""
         try:
             embedding = self.embeddings.embed_query(query)
+            if not embedding or (isinstance(embedding, str) and embedding == 'error'):
+                raise ValueError(f"HuggingFace API returned error: {embedding}")
             return embedding
         except Exception as e:
             logger.error(f"Error generating query embedding: {e}")
