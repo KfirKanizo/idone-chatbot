@@ -53,27 +53,30 @@ class VectorService:
             if vectors:
                 logger.info(f"Inserting {len(vectors)} vectors, dimension: {len(vectors[0]) if vectors else 'unknown'}")
             
-            # Use REST API directly to avoid qdrant-client compatibility issues
+            # Use REST API with correct format: separate ids, vectors, payloads
             import httpx
             
-            points = []
-            for i, (chunk, vector) in enumerate(zip(chunks, vectors)):
-                points.append({
-                    "id": f"{document_id}_{i}",
-                    "vector": vector,
-                    "payload": {
-                        "tenant_id": tenant_id,
-                        "document_id": document_id,
-                        "chunk_index": i,
-                        "text": chunk
-                    }
-                })
+            ids = [f"{document_id}_{i}" for i in range(len(chunks))]
+            payloads = [
+                {
+                    "tenant_id": tenant_id,
+                    "document_id": document_id,
+                    "chunk_index": i,
+                    "text": chunk
+                }
+                for i, chunk in enumerate(chunks)
+            ]
             
             url = f"http://{settings.qdrant_host}:{settings.qdrant_port}/collections/{COLLECTION_NAME}/points"
             
+            # Qdrant REST API expects: {"ids": [...], "vectors": [...], "payloads": [...]}
             response = httpx.post(
                 url,
-                json={"points": points},
+                json={
+                    "ids": ids,
+                    "vectors": vectors,
+                    "payloads": payloads
+                },
                 timeout=30.0
             )
             
@@ -81,7 +84,7 @@ class VectorService:
                 logger.error(f"Qdrant API error: {response.status_code} - {response.text}")
                 return False
             
-            logger.info(f"Inserted {len(points)} vectors for document {document_id}")
+            logger.info(f"Inserted {len(vectors)} vectors for document {document_id}")
             return True
         except Exception as e:
             logger.error(f"Error inserting vectors: {e}")
