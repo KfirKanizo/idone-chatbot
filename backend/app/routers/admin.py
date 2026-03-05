@@ -28,8 +28,8 @@ from app.services.rag_service import rag_service
 from app.services.vector_service import vector_service
 from app.utils.helpers import process_file_content, clean_text
 from app.config import settings
-from app.routers.logs import log_audit_action
 from loguru import logger
+from app.routers.logs import log_audit_action
 
 
 router = APIRouter(

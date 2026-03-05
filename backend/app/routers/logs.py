@@ -8,14 +8,14 @@ Provides endpoints for viewing:
 Also provides helper functions for logging from other modules.
 """
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Header, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from typing import List, Optional
 from pydantic import BaseModel
 from app.database import get_db
-from app.routers.admin import verify_admin_key
 from app.models import IntegrationLog, AuditLog
+from app.config import settings
 from loguru import logger
 
 
@@ -23,6 +23,16 @@ router = APIRouter(
     prefix="/admin/logs",
     tags=["Admin - Logs"],
 )
+
+
+def verify_admin_key(x_admin_key: Optional[str] = Header(None)):
+    """Verify admin API key from X-Admin-Key header."""
+    if x_admin_key != settings.admin_api_key:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid admin API key"
+        )
+    return True
 
 
 # Response Models
