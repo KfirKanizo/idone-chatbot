@@ -72,6 +72,22 @@ class DocumentResponse(BaseModel):
         from_attributes = True
 
 
+class DocumentListResponse(BaseModel):
+    id: str
+    filename: str
+    file_type: str
+    chunk_count: int
+    is_indexed: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class DocumentUpdateRequest(BaseModel):
+    text: str = Field(..., description="New text content for the document")
+
+
 class IngestRequest(BaseModel):
     text: Optional[str] = None
     url: Optional[str] = None
@@ -82,6 +98,14 @@ class IngestResponse(BaseModel):
     document_id: str
     chunks_created: int
     message: str
+
+
+class MultiIngestResponse(BaseModel):
+    success: bool
+    total_files: int
+    successful: int
+    failed: int
+    results: List[Dict[str, Any]]
 
 
 # ==================== Chat Schemas ====================
