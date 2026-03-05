@@ -28,6 +28,7 @@ from app.services.rag_service import rag_service
 from app.services.vector_service import vector_service
 from app.utils.helpers import process_file_content, clean_text
 from app.config import settings
+from app.routers.logs import log_audit_action
 from loguru import logger
 
 
@@ -101,6 +102,15 @@ async def create_tenant(
     service = TenantService(db)
     tenant = await service.create_tenant(tenant_data)
     logger.info(f"Created new tenant: {tenant.name} ({tenant.id})")
+    
+    # Audit log
+    await log_audit_action(
+        db,
+        tenant_id=tenant.id,
+        action="CREATE_TENANT",
+        details={"name": tenant.name, "llm_model": tenant.llm_model}
+    )
+    
     return tenant
 
 
@@ -212,6 +222,15 @@ async def update_tenant(
             detail="Tenant not found"
         )
     logger.info(f"Updated tenant: {tenant.name} ({tenant.id})")
+    
+    # Audit log
+    await log_audit_action(
+        db,
+        tenant_id=tenant.id,
+        action="UPDATE_TENANT",
+        details=tenant_data.model_dump(exclude_unset=True)
+    )
+    
     return tenant
 
 
@@ -246,6 +265,9 @@ async def delete_tenant(
     - 204 No Content on success
     """
     service = TenantService(db)
+    tenant = await service.get_tenant_by_id(tenant_id)
+    tenant_name = tenant.name if tenant else "Unknown"
+    
     success = await service.delete_tenant(tenant_id)
     if not success:
         raise HTTPException(
@@ -253,6 +275,15 @@ async def delete_tenant(
             detail="Tenant not found"
         )
     logger.warning(f"Deleted tenant: {tenant_id}")
+    
+    # Audit log
+    await log_audit_action(
+        db,
+        tenant_id=tenant_id,
+        action="DELETE_TENANT",
+        details={"tenant_name": tenant_name}
+    )
+    
     return None
 
 
@@ -382,6 +413,15 @@ async def delete_document(
     await db.commit()
     
     logger.info(f"Deleted document {document_id} for tenant {tenant_id}")
+    
+    # Audit log
+    await log_audit_action(
+        db,
+        tenant_id=tenant_id,
+        action="DELETE_DOCUMENT",
+        details={"document_id": document_id, "filename": document.filename}
+    )
+    
     return None
 
 
@@ -459,6 +499,15 @@ async def update_document(
     await db.refresh(document)
     
     logger.info(f"Updated document {document_id} for tenant {tenant_id}")
+    
+    # Audit log
+    await log_audit_action(
+        db,
+        tenant_id=tenant_id,
+        action="UPDATE_DOCUMENT",
+        details={"document_id": document_id, "filename": document.filename}
+    )
+    
     return document
 
 
@@ -637,6 +686,16 @@ async def upload_multiple_files(
                 failed += 1
         
         await db.commit()
+        
+        # Audit log for successful uploads
+        if successful > 0:
+            uploaded_files = [r["filename"] for r in results if r.get("success")]
+            await log_audit_action(
+                db,
+                tenant_id=tenant_id,
+                action="UPLOAD_DOCUMENT",
+                details={"files": uploaded_files, "count": successful}
+            )
         
         return MultiIngestResponse(
             success=failed == 0,

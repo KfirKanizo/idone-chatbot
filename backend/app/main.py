@@ -13,7 +13,7 @@ import os
 
 from app.config import settings
 from app.database import init_db
-from app.routers import admin, ingest, chat, analytics
+from app.routers import admin, ingest, chat, analytics, logs
 from app.services.vector_service import vector_service
 
 
@@ -151,6 +151,7 @@ app.include_router(admin.router)
 app.include_router(ingest.router)
 app.include_router(chat.router)
 app.include_router(analytics.router)
+app.include_router(logs.router)
 
 
 @app.get(

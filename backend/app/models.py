@@ -65,3 +65,32 @@ class ChatHistory(Base):
 
     def __repr__(self):
         return f"<ChatHistory {self.id} - Tenant: {self.tenant_id}>"
+
+
+class IntegrationLog(Base):
+    __tablename__ = "integration_logs"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True, index=True)
+    target_url = Column(String(2048), nullable=False)
+    method = Column(String(10), nullable=False)
+    status_code = Column(Integer, nullable=True)
+    payload = Column(JSON, nullable=True)
+    response_body = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)
+
+    def __repr__(self):
+        return f"<IntegrationLog {self.id} - {self.method} {self.target_url}>"
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True, index=True)
+    action = Column(String(100), nullable=False)
+    details = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)
+
+    def __repr__(self):
+        return f"<AuditLog {self.id} - {self.action}>"
