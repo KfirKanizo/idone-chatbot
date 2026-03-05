@@ -22,7 +22,7 @@ from app.schemas import (
     TenantCreate, TenantUpdate, TenantResponse, TenantListResponse,
     DocumentListResponse, MultiIngestResponse, DocumentUpdateRequest
 )
-from app.models import Document
+from app.models import Document, ChatHistory
 from app.services.tenant_service import TenantService
 from app.services.rag_service import rag_service
 from app.services.vector_service import vector_service
@@ -656,3 +656,120 @@ async def upload_multiple_files(
             failed=1,
             results=[{"filename": "unknown", "success": False, "error": str(e)}]
         )
+
+
+# ==================== Chat History Endpoints ====================
+
+@router.get(
+    "/tenants/{tenant_id}/users",
+    summary="List Tenant Users",
+    description="""
+    Get a list of all users who have interacted with the chatbot for a specific tenant.
+    
+    Returns user_id and last activity timestamp.
+    Sorted by most recent activity first.
+    """,
+    response_description="List of users with chat history"
+)
+async def list_tenant_users(
+    tenant_id: str,
+    db: AsyncSession = Depends(get_db),
+    _: bool = Depends(verify_admin_key)
+):
+    """
+    Retrieve all users who have chatted with this tenant's bot.
+    
+    **Path Parameters:**
+    - tenant_id: UUID of the tenant
+    
+    **Returns:**
+    - Array of user objects with id and last_activity
+    """
+    # Verify tenant exists
+    tenant_service = TenantService(db)
+    tenant = await tenant_service.get_tenant_by_id(tenant_id)
+    if not tenant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Tenant not found"
+        )
+    
+    # Get unique users with their last activity
+    from sqlalchemy import func
+    result = await db.execute(
+        select(
+            ChatHistory.user_id,
+            func.max(ChatHistory.created_at).label('last_activity'),
+            func.count(ChatHistory.id).label('message_count')
+        )
+        .where(ChatHistory.tenant_id == tenant_id)
+        .group_by(ChatHistory.user_id)
+        .order_by(func.max(ChatHistory.created_at).desc())
+    )
+    
+    users = [
+        {
+            "user_id": row.user_id,
+            "last_activity": row.last_activity.isoformat(),
+            "message_count": row.message_count
+        }
+        for row in result.all()
+    ]
+    
+    return users
+
+
+@router.get(
+    "/tenants/{tenant_id}/chat-history/{user_id}",
+    summary="Get User Chat History",
+    description="""
+    Get the full conversation history for a specific user under a tenant.
+    
+    Returns all messages and responses in chronological order.
+    """,
+    response_description="List of chat messages"
+)
+async def get_user_chat_history(
+    tenant_id: str,
+    user_id: str,
+    db: AsyncSession = Depends(get_db),
+    _: bool = Depends(verify_admin_key)
+):
+    """
+    Retrieve full chat history for a user.
+    
+    **Path Parameters:**
+    - tenant_id: UUID of the tenant
+    - user_id: User identifier
+    
+    **Returns:**
+    - Array of message objects with timestamp, message, and response
+    """
+    # Verify tenant exists
+    tenant_service = TenantService(db)
+    tenant = await tenant_service.get_tenant_by_id(tenant_id)
+    if not tenant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Tenant not found"
+        )
+    
+    # Get chat history ordered by time
+    result = await db.execute(
+        select(ChatHistory)
+        .where(ChatHistory.tenant_id == tenant_id)
+        .where(ChatHistory.user_id == user_id)
+        .order_by(ChatHistory.created_at.asc())
+    )
+    
+    history = [
+        {
+            "id": chat.id,
+            "message": chat.message,
+            "response": chat.response,
+            "timestamp": chat.created_at.isoformat()
+        }
+        for chat in result.scalars().all()
+    ]
+    
+    return history
