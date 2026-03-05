@@ -17,28 +17,29 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <nav class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3">
-                    <i class="fas fa-robot text-2xl"></i>
-                    <span class="font-bold text-xl">iDone Chatbot Manager</span>
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <i class="fas fa-robot text-xl sm:text-2xl"></i>
+                    <span class="font-bold text-lg sm:text-xl hidden sm:inline">iDone Chatbot Manager</span>
+                    <span class="font-bold text-lg sm:text-xl sm:hidden">iDone</span>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="flex gap-2">
-                        <button onclick="switchView('dashboard')" id="nav-dashboard" class="px-4 py-1 rounded-full text-sm font-medium bg-white text-blue-800 transition">
-                            <i class="fas fa-chart-line mr-1"></i>Dashboard
+                <div class="flex flex-wrap items-center gap-2 sm:gap-4">
+                    <div class="flex gap-1 sm:gap-2">
+                        <button onclick="switchView('dashboard')" id="nav-dashboard" class="px-2 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-medium bg-white text-blue-800 transition">
+                            <i class="fas fa-chart-line mr-1"></i><span class="hidden sm:inline">Dashboard</span>
                         </button>
-                        <button onclick="switchView('tenants')" id="nav-tenants" class="px-4 py-1 rounded-full text-sm font-medium bg-blue-700 text-white transition">
-                            <i class="fas fa-users mr-1"></i>Tenants
+                        <button onclick="switchView('tenants')" id="nav-tenants" class="px-2 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-700 text-white transition">
+                            <i class="fas fa-users mr-1"></i><span class="hidden sm:inline">Tenants</span>
                         </button>
                     </div>
-                    <input type="password" id="adminKeyInput" placeholder="Admin API Key" 
-                        class="text-sm bg-blue-700 px-3 py-1 rounded-full border border-blue-500 placeholder-blue-300 text-white focus:outline-none focus:border-white w-48"
+                    <input type="password" id="adminKeyInput" placeholder="Admin Key" 
+                        class="text-xs sm:text-sm bg-blue-700 px-2 sm:px-3 py-1 rounded-full border border-blue-500 placeholder-blue-300 text-white focus:outline-none focus:border-white w-28 sm:w-48"
                         oninput="localStorage.setItem('adminKey', this.value)"
                         onchange="localStorage.setItem('adminKey', this.value); loadTenants();">
-                    <span id="systemStatus" class="text-sm bg-blue-700 px-3 py-1 rounded-full">
+                    <span id="systemStatus" class="text-xs sm:text-sm bg-blue-700 px-2 sm:px-3 py-1 rounded-full whitespace-nowrap">
                         <i class="fas fa-circle text-xs mr-1" id="statusDot"></i>
-                        <span id="statusText">Checking...</span>
+                        <span id="statusText" class="hidden sm:inline">Checking...</span>
                     </span>
                 </div>
             </div>
@@ -48,91 +49,91 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Dashboard View -->
         <div id="dashboardView" class="fade-in">
-            <div class="flex items-center justify-between mb-6">
-                <h1 class="text-2xl font-bold text-gray-800">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-800">
                     <i class="fas fa-chart-line text-blue-600 mr-2"></i>Analytics Dashboard
                 </h1>
-                <div class="flex items-center gap-3">
-                    <select id="timelineRange" onchange="loadDashboard()" class="px-3 py-2 border rounded-lg text-sm">
-                        <option value="7">Last 7 days</option>
-                        <option value="14">Last 14 days</option>
-                        <option value="30">Last 30 days</option>
+                <div class="flex items-center gap-2">
+                    <select id="timelineRange" onchange="loadDashboard()" class="px-2 sm:px-3 py-2 border rounded-lg text-sm">
+                        <option value="7">7 days</option>
+                        <option value="14">14 days</option>
+                        <option value="30">30 days</option>
                     </select>
-                    <button onclick="loadDashboard()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
-                        <i class="fas fa-sync-alt mr-1"></i>Refresh
+                    <button onclick="loadDashboard()" class="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
+                        <i class="fas fa-sync-alt sm:mr-1"></i><span class="hidden sm:inline ml-1">Refresh</span>
                     </button>
                 </div>
             </div>
 
             <!-- Summary Cards -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-5">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-500">Total Tenants</p>
-                            <p class="text-2xl font-bold text-gray-800" id="dashTotalTenants">-</p>
+                            <p class="text-xs sm:text-sm text-gray-500">Total Tenants</p>
+                            <p class="text-xl sm:text-2xl font-bold text-gray-800" id="dashTotalTenants">-</p>
                             <p class="text-xs text-green-600" id="dashActiveTenants">-</p>
                         </div>
-                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-building text-blue-600 text-xl"></i>
+                        <div class="w-8 h-8 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-building text-blue-600 text-sm sm:text-xl"></i>
                         </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-5">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-500">Total Users</p>
-                            <p class="text-2xl font-bold text-gray-800" id="dashTotalUsers">-</p>
+                            <p class="text-xs sm:text-sm text-gray-500">Total Users</p>
+                            <p class="text-xl sm:text-2xl font-bold text-gray-800" id="dashTotalUsers">-</p>
                             <p class="text-xs text-gray-500" id="dashAvgMessages">-</p>
                         </div>
-                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-users text-purple-600 text-xl"></i>
+                        <div class="w-8 h-8 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-purple-600 text-sm sm:text-xl"></i>
                         </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-5">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-500">Total Messages</p>
-                            <p class="text-2xl font-bold text-gray-800" id="dashTotalMessages">-</p>
+                            <p class="text-xs sm:text-sm text-gray-500">Total Messages</p>
+                            <p class="text-xl sm:text-2xl font-bold text-gray-800" id="dashTotalMessages">-</p>
                         </div>
-                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-comments text-green-600 text-xl"></i>
+                        <div class="w-8 h-8 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-comments text-green-600 text-sm sm:text-xl"></i>
                         </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-5">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-500">Total Documents</p>
-                            <p class="text-2xl font-bold text-gray-800" id="dashTotalDocuments">-</p>
+                            <p class="text-xs sm:text-sm text-gray-500">Total Documents</p>
+                            <p class="text-xl sm:text-2xl font-bold text-gray-800" id="dashTotalDocuments">-</p>
                             <p class="text-xs text-blue-600" id="dashTokens">-</p>
                         </div>
-                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-file-alt text-yellow-600 text-xl"></i>
+                        <div class="w-8 h-8 sm:w-12 sm:h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-file-alt text-yellow-600 text-sm sm:text-xl"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Charts -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 <!-- Activity Timeline Chart -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-6">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
                         <i class="fas fa-chart-area text-blue-600 mr-2"></i>Activity Timeline
                     </h3>
-                    <div style="position: relative; height: 300px; width: 100%;">
+                    <div class="h-[250px] sm:h-[300px] w-full">
                         <canvas id="timelineChart"></canvas>
                     </div>
                 </div>
 
                 <!-- Usage by Tenant Chart -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-6">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
                         <i class="fas fa-chart-bar text-purple-600 mr-2"></i>Usage by Tenant
                     </h3>
-                    <div style="position: relative; height: 300px; width: 100%;">
+                    <div class="h-[250px] sm:h-[300px] w-full">
                         <canvas id="tenantChart"></canvas>
                     </div>
                 </div>
@@ -141,25 +142,25 @@
 
         <!-- Tenants View -->
         <div id="tenantsView" class="hidden fade-in">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-                    <div class="p-6 border-b border-gray-200">
-                        <h2 class="text-xl font-semibold text-gray-800">
+                    <div class="p-4 sm:p-6 border-b border-gray-200">
+                        <h2 class="text-lg sm:text-xl font-semibold text-gray-800">
                             <i class="fas fa-users text-blue-600 mr-2"></i>Tenants
                         </h2>
                     </div>
-                    <div class="p-6">
+                    <div class="p-4 sm:p-6">
                         <div class="overflow-x-auto">
-                            <table class="w-full">
+                            <table class="w-full text-sm">
                                 <thead>
-                                    <tr class="text-left text-sm text-gray-500 border-b">
-                                        <th class="pb-3 font-medium">Name</th>
-                                        <th class="pb-3 font-medium">Status</th>
-                                        <th class="pb-3 font-medium">Documents</th>
-                                        <th class="pb-3 font-medium">Users</th>
-                                        <th class="pb-3 font-medium">Created</th>
-                                        <th class="pb-3 font-medium">Actions</th>
+                                    <tr class="text-left text-xs sm:text-sm text-gray-500 border-b">
+                                        <th class="pb-2 sm:pb-3 font-medium">Name</th>
+                                        <th class="pb-2 sm:pb-3 font-medium">Status</th>
+                                        <th class="pb-2 sm:pb-3 font-medium hidden sm:table-cell">Docs</th>
+                                        <th class="pb-2 sm:pb-3 font-medium hidden sm:table-cell">Users</th>
+                                        <th class="pb-2 sm:pb-3 font-medium hidden md:table-cell">Created</th>
+                                        <th class="pb-2 sm:pb-3 font-medium">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tenantTableBody">
@@ -176,43 +177,43 @@
                 </div>
             </div>
 
-            <div class="space-y-6">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">
-                        <i class="fas fa-plus-circle text-green-600 mr-2"></i>Add New Tenant
+            <div class="space-y-4 sm:space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+                    <h2 class="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
+                        <i class="fas fa-plus-circle text-green-600 mr-2"></i>Add Tenant
                     </h2>
-                    <form id="addTenantForm" class="space-y-4">
+                    <form id="addTenantForm" class="space-y-3 sm:space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tenant Name</label>
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Tenant Name</label>
                             <input type="text" id="tenantName" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                class="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm"
                                 placeholder="e.g., Acme Corp">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">System Prompt</label>
-                            <textarea id="tenantSystemPrompt" rows="4"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">System Prompt</label>
+                            <textarea id="tenantSystemPrompt" rows="3"
+                                class="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm"
                                 placeholder="You are a helpful assistant..."></textarea>
                         </div>
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">LLM Model</label>
+                                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">LLM Model</label>
                                 <select id="tenantModel"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                                    <option value="llama-3.1-8b-instant">Llama 3.1 8B (Fast)</option>
+                                    class="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                                    <option value="llama-3.1-8b-instant">Llama 3.1 8B</option>
                                     <option value="llama-3.1-70b-versatile">Llama 3.1 70B</option>
                                     <option value="llama-3.1-405b-reasoning">Llama 3.1 405B</option>
                                     <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Temperature</label>
+                                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Temperature</label>
                                 <input type="number" id="tenantTemperature" step="0.1" min="0" max="2" value="0.7"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                    class="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
                             </div>
                         </div>
                         <button type="submit"
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center justify-center gap-2 text-sm sm:text-base">
                             <i class="fas fa-plus"></i>Create Tenant
                         </button>
                     </form>
@@ -514,10 +515,23 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { position: 'bottom' }
+                            legend: { 
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 10,
+                                    font: { size: 11 }
+                                }
+                            }
                         },
                         scales: {
-                            y: { beginAtZero: true }
+                            y: { 
+                                beginAtZero: true,
+                                ticks: { font: { size: 10 } }
+                            },
+                            x: {
+                                ticks: { font: { size: 10 } }
+                            }
                         }
                     }
                 });
@@ -567,10 +581,23 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { position: 'bottom' }
+                            legend: { 
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 10,
+                                    font: { size: 11 }
+                                }
+                            }
                         },
                         scales: {
-                            y: { beginAtZero: true }
+                            y: { 
+                                beginAtZero: true,
+                                ticks: { font: { size: 10 } }
+                            },
+                            x: {
+                                ticks: { font: { size: 10 } }
+                            }
                         }
                     }
                 });
@@ -649,20 +676,20 @@
             }
             tbody.innerHTML = tenants.map(t => `
                 <tr class="border-b hover:bg-gray-50 transition">
-                    <td class="py-4 font-medium text-gray-800">${t.name}</td>
-                    <td class="py-4">
+                    <td class="py-3 sm:py-4 font-medium text-gray-800 text-sm">${t.name}</td>
+                    <td class="py-3 sm:py-4">
                         <span class="px-2 py-1 rounded-full text-xs font-medium ${t.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
                             ${t.is_active ? 'Active' : 'Inactive'}
                         </span>
                     </td>
-                    <td class="py-4 text-gray-600">${t.document_count || 0}</td>
-                    <td class="py-4 text-gray-600">${t.chat_count || 0}</td>
-                    <td class="py-4 text-gray-500 text-sm">${new Date(t.created_at).toLocaleDateString()}</td>
-                    <td class="py-4">
-                        <button onclick="viewTenant('${t.id}')" class="text-blue-600 hover:text-blue-800 mr-2" title="View/Edit">
+                    <td class="py-3 sm:py-4 text-gray-600 text-sm hidden sm:table-cell">${t.document_count || 0}</td>
+                    <td class="py-3 sm:py-4 text-gray-600 text-sm hidden sm:table-cell">${t.chat_count || 0}</td>
+                    <td class="py-3 sm:py-4 text-gray-500 text-xs hidden md:table-cell">${new Date(t.created_at).toLocaleDateString()}</td>
+                    <td class="py-3 sm:py-4">
+                        <button onclick="viewTenant('${t.id}')" class="text-blue-600 hover:text-blue-800 mr-1 sm:mr-2" title="View/Edit">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="copyApiKey('${t.id}')" class="text-gray-600 hover:text-gray-800 mr-2" title="Copy API Key">
+                        <button onclick="copyApiKey('${t.id}')" class="text-gray-600 hover:text-gray-800 mr-1 sm:mr-2" title="Copy API Key">
                             <i class="fas fa-key"></i>
                         </button>
                         <button onclick="deleteTenant('${t.id}')" class="text-red-600 hover:text-red-800" title="Delete">
