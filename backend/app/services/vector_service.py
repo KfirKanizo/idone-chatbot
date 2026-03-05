@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict, Any
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue
+from qdrant_client.models import Distance, VectorParams, Filter, FieldCondition, MatchValue
 from app.config import settings
 from loguru import logger
 
@@ -28,14 +28,15 @@ class VectorService:
             collection_names = [c.name for c in collections]
             
             if COLLECTION_NAME not in collection_names:
+                # Use 1024 for Cohere embeddings
                 self.client.create_collection(
                     collection_name=COLLECTION_NAME,
                     vectors_config=VectorParams(
-                        size=1536,
+                        size=1024,  # Cohere embed-english-v3.0 produces 1024 dimensions
                         distance=Distance.COSINE
                     )
                 )
-                logger.info(f"Created Qdrant collection: {COLLECTION_NAME}")
+                logger.info(f"Created Qdrant collection: {COLLECTION_NAME} with 1024-dim vectors")
             else:
                 logger.debug(f"Qdrant collection {COLLECTION_NAME} already exists")
         except Exception as e:
@@ -49,25 +50,23 @@ class VectorService:
         vectors: List[List[float]]
     ) -> bool:
         try:
-            # Debug: log vector dimensions
             if vectors:
                 logger.info(f"Inserting {len(vectors)} vectors, dimension: {len(vectors[0]) if vectors else 'unknown'}")
             
-            points = [
-                PointStruct(
-                    id=f"{document_id}_{i}",
-                    vector=vector,
-                    payload={
+            # Build points with proper format for qdrant-client 1.7.x
+            points = []
+            for i, (chunk, vector) in enumerate(zip(chunks, vectors)):
+                points.append({
+                    "id": f"{document_id}_{i}",
+                    "vector": vector,
+                    "payload": {
                         "tenant_id": tenant_id,
                         "document_id": document_id,
                         "chunk_index": i,
                         "text": chunk
                     }
-                )
-                for i, (chunk, vector) in enumerate(zip(chunks, vectors))
-            ]
+                })
             
-            # Use points directly (not wrapped)
             self.client.upsert(
                 collection_name=COLLECTION_NAME,
                 points=points
