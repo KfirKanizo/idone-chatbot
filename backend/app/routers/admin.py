@@ -773,3 +773,58 @@ async def get_user_chat_history(
     ]
     
     return history
+
+
+@router.delete(
+    "/tenants/{tenant_id}/chat-history/{chat_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete Chat Message",
+    description="""
+    Delete a specific chat message from history.
+    """,
+    response_description="Chat message successfully deleted"
+)
+async def delete_chat_message(
+    tenant_id: str,
+    chat_id: str,
+    db: AsyncSession = Depends(get_db),
+    _: bool = Depends(verify_admin_key)
+):
+    """
+    Delete a specific chat message.
+    
+    **Path Parameters:**
+    - tenant_id: UUID of the tenant
+    - chat_id: UUID of the chat message to delete
+    
+    **Returns:**
+    - 204 No Content on success
+    """
+    # Verify tenant exists
+    tenant_service = TenantService(db)
+    tenant = await tenant_service.get_tenant_by_id(tenant_id)
+    if not tenant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Tenant not found"
+        )
+    
+    # Find and delete the chat message
+    result = await db.execute(
+        select(ChatHistory)
+        .where(ChatHistory.id == chat_id)
+        .where(ChatHistory.tenant_id == tenant_id)
+    )
+    chat = result.scalar_one_or_none()
+    
+    if not chat:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Chat message not found"
+        )
+    
+    await db.delete(chat)
+    await db.commit()
+    
+    logger.info(f"Deleted chat message {chat_id} for tenant {tenant_id}")
+    return None
