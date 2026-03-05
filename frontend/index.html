@@ -206,6 +206,146 @@
         </div>
     </div>
 
+    <!-- Tenant Details Modal -->
+    <div id="tenantDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-[95vw] max-w-[1400px] h-[90vh] flex flex-col">
+            <!-- Header -->
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-2xl font-bold text-gray-800" id="tenantDetailsTitle">Tenant Details</h3>
+                <button onclick="closeTenantDetailsModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="border-b border-gray-200 px-6">
+                <nav class="flex gap-8">
+                    <button onclick="switchTenantTab('settings')" id="tab-settings" class="py-4 px-1 border-b-2 font-medium text-sm transition-colors border-blue-500 text-blue-600">
+                        <i class="fas fa-cog mr-2"></i>Settings
+                    </button>
+                    <button onclick="switchTenantTab('knowledge')" id="tab-knowledge" class="py-4 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        <i class="fas fa-book mr-2"></i>Knowledge Base
+                    </button>
+                    <button onclick="switchTenantTab('chats')" id="tab-chats" class="py-4 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        <i class="fas fa-comments mr-2"></i>Chat History
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <!-- Settings Tab -->
+                <div id="tabContent-settings" class="tab-content">
+                    <div class="max-w-2xl">
+                        <form id="tenantSettingsForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tenant Name</label>
+                                <input type="text" id="detailName" required class="w-full px-3 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">System Prompt</label>
+                                <textarea id="detailSystemPrompt" rows="6" class="w-full px-3 py-2 border rounded-lg"></textarea>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">LLM Model</label>
+                                    <select id="detailModel" class="w-full px-3 py-2 border rounded-lg">
+                                        <option value="llama-3.1-8b-instant">Llama 3.1 8B (Fast)</option>
+                                        <option value="llama-3.1-70b-versatile">Llama 3.1 70B</option>
+                                        <option value="llama-3.1-405b-reasoning">Llama 3.1 405B</option>
+                                        <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Temperature</label>
+                                    <input type="number" id="detailTemperature" step="0.1" min="0" max="2" class="w-full px-3 py-2 border rounded-lg">
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="checkbox" id="detailActive" class="rounded">
+                                <label for="detailActive" class="text-sm text-gray-700">Active</label>
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded-lg">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tenant ID</label>
+                                <code id="detailTenantId" class="text-xs bg-gray-200 px-2 py-1 rounded block mb-2"></code>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">API Key</label>
+                                <div class="flex gap-2">
+                                    <code id="detailApiKey" class="text-xs bg-gray-200 px-2 py-1 rounded flex-1 break-all"></code>
+                                    <button type="button" onclick="copyToClipboard(document.getElementById('detailApiKey').textContent)" class="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">
+                                        <i class="fas fa-copy"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium">
+                                    <i class="fas fa-save mr-2"></i>Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Knowledge Base Tab -->
+                <div id="tabContent-knowledge" class="tab-content hidden">
+                    <div class="space-y-4">
+                        <!-- Upload Section -->
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold text-gray-800 mb-3">
+                                <i class="fas fa-upload mr-2"></i>Upload Documents
+                            </h3>
+                            <div class="flex gap-3">
+                                <input type="file" id="multiFileUpload" multiple accept=".txt,.pdf,.docx,.md" class="flex-1 border rounded-lg px-3 py-2" multiple>
+                                <button onclick="uploadMultipleFiles()" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium">
+                                    <i class="fas fa-upload mr-2"></i>Upload
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Supported: TXT, PDF, DOCX, MD (Max 10MB each)</p>
+                        </div>
+                        
+                        <!-- Documents Table -->
+                        <div>
+                            <h3 class="font-semibold text-gray-800 mb-3">
+                                <i class="fas fa-folder mr-2"></i>Uploaded Documents
+                            </h3>
+                            <div id="tenantDocumentsContainer" class="border rounded-lg overflow-hidden">
+                                <p class="text-gray-500 text-center py-4">Loading documents...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chat History Tab -->
+                <div id="tabContent-chats" class="tab-content hidden">
+                    <div class="flex h-[60vh] border rounded-lg overflow-hidden">
+                        <!-- Users List (Left) -->
+                        <div class="w-1/3 border-r bg-gray-50">
+                            <div class="p-3 border-b bg-white">
+                                <h3 class="font-semibold text-gray-800 text-sm">
+                                    <i class="fas fa-users mr-2"></i>Users
+                                </h3>
+                            </div>
+                            <div id="chatUsersList" class="overflow-y-auto" style="height: calc(100% - 50px)">
+                                <p class="text-gray-500 text-center py-4 text-sm">Loading users...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Viewer (Right) -->
+                        <div class="flex-1 flex flex-col bg-white">
+                            <div id="chatViewerHeader" class="p-3 border-b bg-gray-50 hidden">
+                                <h3 class="font-semibold text-gray-800 text-sm">
+                                    <i class="fas fa-comment-dots mr-2"></i>Conversation
+                                </h3>
+                            </div>
+                            <div id="chatMessagesContainer" class="flex-1 overflow-y-auto p-4 bg-gray-50">
+                                <p class="text-gray-500 text-center py-8">Select a user to view conversation</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_BASE = 'https://chat.idone.co.il';
         let tenants = [];
