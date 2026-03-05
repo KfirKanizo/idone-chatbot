@@ -16,7 +16,8 @@ class RAGService:
     def __init__(self):
         self.embeddings = HuggingFaceInferenceAPIEmbeddings(
             model_name="BAAI/bge-large-en-v1.5",
-            api_key=settings.huggingface_api_key
+            api_key=settings.huggingface_api_key,
+            base_url="https://router.huggingface.co"
         )
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
