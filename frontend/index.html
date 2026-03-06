@@ -16,44 +16,90 @@
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <nav class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-2 sm:gap-3">
-                    <i class="fas fa-robot text-xl sm:text-2xl"></i>
-                    <span class="font-bold text-lg sm:text-xl hidden sm:inline">iDone Chatbot Manager</span>
-                    <span class="font-bold text-lg sm:text-xl sm:hidden">iDone</span>
+    <nav class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg relative">
+    <div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <!-- Logo -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <i class="fas fa-robot text-xl sm:text-2xl"></i>
+                <span class="font-bold text-lg sm:text-xl hidden sm:inline">iDone Chatbot Manager</span>
+                <span class="font-bold text-lg sm:text-xl sm:hidden">iDone</span>
+            </div>
+            
+            <!-- Desktop Nav (md+) -->
+            <div class="hidden md:flex flex-wrap items-center gap-2 lg:gap-4">
+                <div class="flex gap-1 lg:gap-2">
+                    <button onclick="switchView('dashboard')" id="nav-dashboard" class="px-2 lg:px-4 py-2 rounded-full text-xs lg:text-sm font-medium bg-white text-blue-800 transition hover:bg-blue-50">
+                        <i class="fas fa-chart-line mr-1"></i><span class="hidden lg:inline">Dashboard</span>
+                    </button>
+                    <button onclick="switchView('integrations')" id="nav-integrations" class="px-2 lg:px-4 py-2 rounded-full text-xs lg:text-sm font-medium bg-blue-700 text-white transition hover:bg-blue-600">
+                        <i class="fas fa-plug mr-1"></i><span class="hidden lg:inline">Integrations</span>
+                    </button>
+                    <button onclick="switchView('audit')" id="nav-audit" class="px-2 lg:px-4 py-2 rounded-full text-xs lg:text-sm font-medium bg-blue-700 text-white transition hover:bg-blue-600">
+                        <i class="fas fa-history mr-1"></i><span class="hidden lg:inline">Audit</span>
+                    </button>
+                    <button onclick="switchView('tenants')" id="nav-tenants" class="px-2 lg:px-4 py-2 rounded-full text-xs lg:text-sm font-medium bg-blue-700 text-white transition hover:bg-blue-600">
+                        <i class="fas fa-users mr-1"></i><span class="hidden lg:inline">Tenants</span>
+                    </button>
+                    <button onclick="switchView('dbchat')" id="nav-dbchat" class="px-2 lg:px-4 py-2 rounded-full text-xs lg:text-sm font-medium bg-blue-700 text-white transition hover:bg-blue-600">
+                        <i class="fas fa-database mr-1"></i><span class="hidden lg:inline">DB Chat</span>
+                    </button>
                 </div>
-                <div class="flex flex-wrap items-center gap-2 sm:gap-4">
-                    <div class="flex gap-1 sm:gap-2">
-                        <button onclick="switchView('dashboard')" id="nav-dashboard" class="px-2 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-medium bg-white text-blue-800 transition">
-                            <i class="fas fa-chart-line mr-1"></i><span class="hidden sm:inline">Dashboard</span>
-                        </button>
-                        <button onclick="switchView('integrations')" id="nav-integrations" class="px-2 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-700 text-white transition">
-                            <i class="fas fa-plug mr-1"></i><span class="hidden sm:inline">Integrations</span>
-                        </button>
-                        <button onclick="switchView('audit')" id="nav-audit" class="px-2 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-700 text-white transition">
-                            <i class="fas fa-history mr-1"></i><span class="hidden sm:inline">Audit</span>
-                        </button>
-                        <button onclick="switchView('tenants')" id="nav-tenants" class="px-2 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-700 text-white transition">
-                            <i class="fas fa-users mr-1"></i><span class="hidden sm:inline">Tenants</span>
-                        </button>
-                        <button onclick="switchView('dbchat')" id="nav-dbchat" class="px-2 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-700 text-white transition">
-                            <i class="fas fa-database mr-1"></i><span class="hidden sm:inline">DB Chat</span>
-                        </button>
-                    </div>
-                    <input type="password" id="adminKeyInput" placeholder="Admin Key" 
-                        class="text-xs sm:text-sm bg-blue-700 px-2 sm:px-3 py-1 rounded-full border border-blue-500 placeholder-blue-300 text-white focus:outline-none focus:border-white w-28 sm:w-48"
-                        oninput="localStorage.setItem('adminKey', this.value)"
-                        onchange="localStorage.setItem('adminKey', this.value); loadTenants();">
-                    <span id="systemStatus" class="text-xs sm:text-sm bg-blue-700 px-2 sm:px-3 py-1 rounded-full whitespace-nowrap">
-                        <i class="fas fa-circle text-xs mr-1" id="statusDot"></i>
-                        <span id="statusText" class="hidden sm:inline">Checking...</span>
-                    </span>
-                </div>
+                <input type="password" id="adminKeyInput" placeholder="Admin Key" 
+                    class="text-xs lg:text-sm bg-blue-700 px-3 py-2 rounded-full border border-blue-500 placeholder-blue-300 text-white focus:outline-none focus:border-white w-32 lg:w-48"
+                    oninput="localStorage.setItem('adminKey', this.value)"
+                    onchange="localStorage.setItem('adminKey', this.value); loadTenants();">
+                <span id="systemStatus" class="text-xs lg:text-sm bg-blue-700 px-3 py-2 rounded-full whitespace-nowrap">
+                    <i class="fas fa-circle text-xs mr-1" id="statusDot"></i>
+                    <span class="hidden lg:inline">Status</span>
+                </span>
+            </div>
+            
+            <!-- Mobile Hamburger Button (visible below md) -->
+            <button onclick="toggleMobileMenu()" id="mobileMenuBtn" class="md:hidden p-2 rounded-lg hover:bg-blue-700 transition">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Mobile Menu (slide-down, visible below md) -->
+    <div id="mobileMenu" class="hidden md:hidden bg-blue-800 border-t border-blue-700 absolute w-full left-0 top-16 z-50 transition-all duration-300 ease-in-out">
+        <div class="p-4 space-y-3">
+            <!-- Nav Buttons -->
+            <div class="space-y-2">
+                <button onclick="switchView('dashboard')" id="mobile-nav-dashboard" class="w-full text-left px-4 py-3 rounded-lg bg-white text-blue-800 font-medium transition hover:bg-blue-50">
+                    <i class="fas fa-chart-line mr-3 w-6"></i>Dashboard
+                </button>
+                <button onclick="switchView('integrations')" id="mobile-nav-integrations" class="w-full text-left px-4 py-3 rounded-lg bg-blue-700 text-white font-medium transition hover:bg-blue-600">
+                    <i class="fas fa-plug mr-3 w-6"></i>Integrations
+                </button>
+                <button onclick="switchView('audit')" id="mobile-nav-audit" class="w-full text-left px-4 py-3 rounded-lg bg-blue-700 text-white font-medium transition hover:bg-blue-600">
+                    <i class="fas fa-history mr-3 w-6"></i>Audit
+                </button>
+                <button onclick="switchView('tenants')" id="mobile-nav-tenants" class="w-full text-left px-4 py-3 rounded-lg bg-blue-700 text-white font-medium transition hover:bg-blue-600">
+                    <i class="fas fa-users mr-3 w-6"></i>Tenants
+                </button>
+                <button onclick="switchView('dbchat')" id="mobile-nav-dbchat" class="w-full text-left px-4 py-3 rounded-lg bg-blue-700 text-white font-medium transition hover:bg-blue-600">
+                    <i class="fas fa-database mr-3 w-6"></i>DB Chat
+                </button>
+            </div>
+            
+            <!-- Admin Key (Mobile) -->
+            <div class="pt-2 border-t border-blue-700">
+                <input type="password" id="mobileAdminKeyInput" placeholder="Admin Key" 
+                    class="w-full px-4 py-3 rounded-lg bg-blue-700 border border-blue-500 placeholder-blue-300 text-white focus:outline-none focus:border-white"
+                    oninput="document.getElementById('adminKeyInput').value = this.value; localStorage.setItem('adminKey', this.value)"
+                    onchange="localStorage.setItem('adminKey', this.value); loadTenants();">
+            </div>
+            
+            <!-- Status (Mobile) -->
+            <div class="pt-2 border-t border-blue-700 flex items-center gap-2">
+                <i class="fas fa-circle text-xs" id="mobileStatusDot"></i>
+                <span id="mobileStatusText" class="text-sm">Checking...</span>
             </div>
         </div>
-    </nav>
+    </div>
+</nav>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Dashboard View -->
@@ -687,7 +733,37 @@
 
         // ==================== View Switching ====================
 
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const btn = document.getElementById('mobileMenuBtn');
+            const icon = btn.querySelector('i');
+            
+            menu.classList.toggle('hidden');
+            
+            if (menu.classList.contains('hidden')) {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            } else {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            }
+        }
+
+        function closeMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const btn = document.getElementById('mobileMenuBtn');
+            const icon = btn.querySelector('i');
+            
+            if (!menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        }
+
         function switchView(view) {
+            closeMobileMenu();
+            
             // Reset all nav buttons
             ['dashboard', 'integrations', 'audit', 'tenants', 'dbchat'].forEach(v => {
                 const nav = document.getElementById('nav-' + v);
@@ -1330,9 +1406,23 @@
                     dot.className = 'fas fa-circle text-xs mr-1 text-yellow-400';
                     text.textContent = 'System Degraded';
                 }
+                // Sync mobile status
+                const mobileDot = document.getElementById('mobileStatusDot');
+                const mobileText = document.getElementById('mobileStatusText');
+                if (mobileDot && mobileText) {
+                    mobileDot.className = dot.className;
+                    mobileText.textContent = text.textContent;
+                }
             } catch (e) {
                 document.getElementById('statusDot').className = 'fas fa-circle text-xs mr-1 text-red-400';
                 document.getElementById('statusText').textContent = 'System Offline';
+                // Sync mobile status
+                const mobileDot = document.getElementById('mobileStatusDot');
+                const mobileText = document.getElementById('mobileStatusText');
+                if (mobileDot && mobileText) {
+                    mobileDot.className = 'fas fa-circle text-xs text-red-400';
+                    mobileText.textContent = 'System Offline';
+                }
             }
         }
 
@@ -1881,12 +1971,18 @@
         const savedKey = localStorage.getItem('adminKey');
         if (savedKey) {
             document.getElementById('adminKeyInput').value = savedKey;
+            document.getElementById('mobileAdminKeyInput').value = savedKey;
             switchView('dashboard');
         } else {
             switchView('dashboard');
         }
         setInterval(checkHealth, 30000);
         startDashboardAutoRefresh();
+        
+        // Sync admin key between desktop and mobile inputs
+        document.getElementById('adminKeyInput').addEventListener('input', function() {
+            document.getElementById('mobileAdminKeyInput').value = this.value;
+        });
     </script>
 </body>
 </html>
