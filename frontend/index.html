@@ -801,7 +801,7 @@
                 const res = await fetch('https://n8n.idone.co.il/webhook-test/chat-db', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message })
+                    body: JSON.stringify({ message: message, sessionId: sessionId })
                 });
                 
                 document.getElementById('dbChatLoading').remove();
